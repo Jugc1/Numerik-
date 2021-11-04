@@ -210,7 +210,7 @@ if __name__ == "__main__":
     plt.title("C Mittel Gauss")
     plt.show()
     
-    BMI = g_mittel(B2,Filter=None,Var=3, erweiterung="symmetric",s=2)
+    BMI = g_mittel(B1,Filter=None,Var=3, erweiterung="symmetric",s=2)
     plt.imshow(BMI, cmap="gray")
     plt.title("B1 Mittel")
     plt.show()
