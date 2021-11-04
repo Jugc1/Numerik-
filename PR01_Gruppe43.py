@@ -161,6 +161,7 @@ if __name__ == "__main__":
             ExampleFilter[i][j]=Gauß(i,j)
     
     plt.imshow(ExampleFilter, cmap="gray", interpolation="none")
+    plt.title("Gaussgewichte")
     plt.show()
     B1 = input("B1.png")
     BMI = g_median(B1,Filter="G",Var=3, erweiterung="symmetric",s=2)
