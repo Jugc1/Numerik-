@@ -82,12 +82,12 @@ def summing(n, m, Weight, Sort, Sort2):
 
 def gauß_filter(var, n, m):
     M = 3 * round(var)
-    W1 = lambda k, l: 1/(2*math.pi*var**2)*( np.exp((-((k-(n-1)/2) ** 2 + (l-(m-1)/2) ** 2)) / (2 * var ** 2) ))if (abs(k) <= M and abs(l) <= M) else 0
+    W1 = lambda k, l: 1/(2*math.pi*var**2)*( np.exp((-((k-(n-1)/2) ** 2 + (l-(m-1)/2) ** 2)) / (2 * var ** 2) ))if (abs((k-(n-1)/2)) <= M and abs((l-(m-1)/2)) <= M) else 0
     S = 0
     for i in range(1, n + 1):
         for j in range(1, m + 1):
             S += W1(i, j)
-    W = lambda k, l:1/(2*math.pi*var**2)* (np.exp((-((k-(n-1)/2) ** 2 + (l-(m-1)/2) ** 2)) / (2 * var ** 2)) / S) if (abs(k) <= M and abs(l) <= M) else 0
+    W = lambda k, l:1/(2*math.pi*var**2)* (np.exp((-((k-(n-1)/2) ** 2 + (l-(m-1)/2) ** 2)) / (2 * var ** 2)) / S) if (abs((k-(n-1)/2)) <= M and abs((l-(m-1)/2)) <= M) else 0
     return W
 
 
@@ -154,10 +154,10 @@ def BilateralFilter(Matrix,varr,vars,erweiterung="edge",s=2):
     return Matrix
 if __name__ == "__main__":
     print(test(100))
-    Gauß= gauß_filter(3,10,10)
-    ExampleFilter= np.zeros((10,10))
-    for i in range(10):
-        for j in range(10):
+    Gauß= gauß_filter(10,100,100)
+    ExampleFilter= np.zeros((100,100))
+    for i in range(100):
+        for j in range(100):
             ExampleFilter[i][j]=Gauß(i,j)
     
     plt.imshow(ExampleFilter, cmap="gray", interpolation="none")
