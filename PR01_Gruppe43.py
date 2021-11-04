@@ -195,7 +195,7 @@ if __name__ == "__main__":
     plt.title("C Median")
     plt.show()
     
-    BMI = g_mittel(B1,Filter="G",Var=3, erweiterung="symmetric",s=2)
+    BMI = g_mittel(B1,Filter="G",Var=3, erweiterung="symmetric",s=1)
     plt.imshow(BMI, cmap="gray")
     plt.title("B1 Mittel Gauss")
     plt.show()
