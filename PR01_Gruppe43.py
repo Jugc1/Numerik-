@@ -161,6 +161,7 @@ if __name__ == "__main__":
             ExampleFilter[i][j]=Gauß(i,j)
     
     plt.imshow(ExampleFilter, cmap="gray", interpolation="none")
+    plt.title("Gaussgewichte")
     plt.show()
     B1 = input("B1.png")
     BMI = g_median(B1,Filter="G",Var=3, erweiterung="symmetric",s=2)
@@ -195,7 +196,7 @@ if __name__ == "__main__":
     plt.title("C Median")
     plt.show()
     
-    BMI = g_mittel(B1,Filter="G",Var=3, erweiterung="symmetric",s=2)
+    BMI = g_mittel(B1,Filter="G",Var=3, erweiterung="symmetric",s=1)
     plt.imshow(BMI, cmap="gray")
     plt.title("B1 Mittel Gauss")
     plt.show()
@@ -210,7 +211,7 @@ if __name__ == "__main__":
     plt.title("C Mittel Gauss")
     plt.show()
     
-    BMI = g_mittel(B2,Filter=None,Var=3, erweiterung="symmetric",s=2)
+    BMI = g_mittel(B1,Filter=None,Var=3, erweiterung="symmetric",s=2)
     plt.imshow(BMI, cmap="gray")
     plt.title("B1 Mittel")
     plt.show()
