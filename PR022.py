@@ -26,7 +26,7 @@ def Ableitung(n):
 
 def diffgl(F,G):
     n,m= np.shape(F)[0],    np.shape(F)[1]
-    p,q = np.shape(G)[0],    np.shape(G)[1]
+
     FL=F.flatten(order=("F"))
     z= sparse.csc_matrix((n*m,1))
 
@@ -37,15 +37,31 @@ def diffgl(F,G):
         z=z+A.getcol(i)*  FL[i]
     for i in range(n,(n*m)-n,(n-1)):
         z =z+A.getcol(i) * FL[i]
-
+    for i in range(n,(n*m)-n,n):
+        z =z+A.getcol(i) * FL[i]
 
     z=z.toarray().flatten(order=("F"))
+    g=G.flatten(order="F")
 
-    b= veclap(p,q).tocsc().dot(G.flatten(order="F") ) -z
+    for i in range(n):  # "Xe" aus dem Omega(F) holen um auf andere Seite zu kriegen
+        g[i]=FL[i]
+
+    for i in range((n * m) - n, n * m):
+        g[i]=FL[i]
+
+    for i in range(n, (n * m) - n, (n - 1)):
+        g[i]=FL[i]
+    for i in range(n,(n*m)-n,n):
+        g[i]=FL[i]
+
+
+    b= A.dot(g)
 
 
 
     lapF = cg(A,b)
+    
+
     return lapF
 
 
@@ -101,5 +117,13 @@ if __name__ == "__main__":
     BL, GL, RL = L[:, :, 0], L[:, :, 1], L[:, :, 2]
     def channelSplit(image):
     return np.dsplit(image,image.shape[-1])
+    A = veclap(n, m).tocsc()
+    for i in range(n):                                    #"Xe" aus dem Omega(F) holen um auf andere Seite zu kriegen
+        z=z+A.getcol(i)*FL[i]
+    for i in range((n*m)-n,n*m):
+        z=z+A.getcol(i)*  FL[i]
+    for i in range(n,(n*m)-n,(n-1)):
+        z =z+A.getcol(i) * FL[i]
+
     
 """
