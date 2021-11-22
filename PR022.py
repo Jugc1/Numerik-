@@ -74,7 +74,7 @@ def diffgl(F,G):
     for i in range(n,(dim)-n,n):
         b[i]=ZW[i]
 
-    lapF = cg(A,b)
+    lapF = cg(A,b,maxiter=100000)
     return lapF
 
 def vektorfeld(F,G):
@@ -95,7 +95,7 @@ def vektorfeld(F,G):
     for i in range(n, (dim) - n, n):
         b[i] = ZW[i]
 
-    lapF = cg(A, b)
+    lapF = cg(A, b, maxiter=100000)
     return lapF
 
 
@@ -114,11 +114,12 @@ def vbauen(F,G):
 
 def omega(F,G,i,j):                                                                  #Teilmenge wo eingefügt werden soll
     p, q = np.shape(G)[0], np.shape(G)[1]
-    return F[max(0,i-floor(p/2)):i+ceil(p/2),max(0,j-floor(q/2)):j+ceil(q/2)]
+    return F[i:i+p,j:j+q]
 
 def combine(F,G,i,j,Art="Gradient"):
     p, q = np.shape(G)[0], np.shape(G)[1]
     OM=omega(F,G,i,j)
+    
     if Art == "Gradient":
         FS=diffgl(OM,G)
     else:
@@ -126,18 +127,20 @@ def combine(F,G,i,j,Art="Gradient"):
 
 
     E=FS[0]
-
+    print(max(E),min(E))
     Z= E.reshape((np.shape(OM)[0],np.shape(OM)[1]),order="F")
 
-    F[max(0,i+1-floor(p/2)):i-1+ceil(p/2),max(0,j+1-floor(q/2)):j-1+ceil(q/2)] = Z[1:np.shape(OM)[0]-1,1:np.shape(OM)[1]-1]
+    F[i+1:i+p-1,j+1:j+q-1] = Z[1:np.shape(OM)[0]-1,1:np.shape(OM)[1]-1]
     return F
 
 
 
 def alltogether(Großes,Kleines,i,j,Art="Gradient"):
     G = io.imread(Großes)
+    G=G.astype("int64")
     RG, GG, BG = G[:, :, 0], G[:, :, 1], G[:, :, 2]
     K = io.imread(Kleines)
+    K = K.astype("int64")
     RK, GK, BK = K[:, :, 0], K[:, :, 1], K[:, :, 2]                      #Extract RGB Werte into Arrays
 
 
