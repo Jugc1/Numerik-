@@ -1,6 +1,3 @@
-#Laufzeit bissel fcked, gradient und seamless vertauscht?,clipping "fehler"?
-
-
 import matplotlib.pyplot as plt
 from math import floor
 from math import ceil
