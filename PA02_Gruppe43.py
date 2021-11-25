@@ -11,7 +11,8 @@ import os
 from scipy import sparse
 from scipy.sparse.linalg import cg
 
-def veclap(n,m):
+
+def veclap(n,m):             #Returns Vektorisierten Laplace Operator für Matrizen der Größe n,m
     Dn=Ableitung(n)
     Dm=Ableitung(m)
     In=  sparse.identity(n)
@@ -19,7 +20,7 @@ def veclap(n,m):
     lap= (sparse.kron(Im,Dn)+sparse.kron(Dm,In))
     return lap
 
-def div(V,n,m):
+def div(V,n,m):                                              #return Divergenz von Vektorfeld v
     DNR=  sparse.eye(n, k=-1)*-1+ sparse.identity(n)
     DMR=  sparse.eye(m, k=-1)*-1+ sparse.identity(m)
     A=sparse.csr_matrix(  V[:,:,0])
@@ -27,7 +28,7 @@ def div(V,n,m):
     dv=  DNR.dot(A) +B.dot(DMR.transpose())
     return dv
 
-def gradient(F):
+def gradient(F):                                               #return vorwärts gradient von F
     n, m = np.shape(F)[0], np.shape(F)[1]
     DNV=sparse.identity(n)*-1+ sparse.eye(n,k=1)
     DMV =sparse.identity(m)*-1+ sparse.eye(m,k=-1)
@@ -47,13 +48,13 @@ def gradient(F):
 
     return X
 
-def Ableitung(n):
+def Ableitung(n):               #return "Dn" Sparse Matrix size N, Zweite Ableitung Operator
     D=sparse.eye(n)  *-2
     O=sparse.eye(n,k=1)
     U = sparse.eye(n, k=-1)
     return O+U+D
 
-def diffgl(F,G):
+def diffgl(F,G):                                         #solve lap(F)=lap(G) with nebenbedingunen (Gleich auf dem Rand)
     n,m= np.shape(F)[0],np.shape(F)[1]
     dim =n*m
     FL=F.flatten(order=("F"))
@@ -64,7 +65,7 @@ def diffgl(F,G):
     g = G.flatten(order="F")
     b= A.dot(g)
 
-    for i in range(n):                                    #"Xe" aus dem Omega(F) holen um auf andere Seite zu kriegen
+    for i in range(n):                                    #"Bekannten" auf die rechte seite bringen
         b[i]=ZW[i]
     for i in range((n*m)-n,dim):
         b[i]=ZW[i]
@@ -76,7 +77,7 @@ def diffgl(F,G):
     lapF = cg(A,b,maxiter=100000)
     return lapF
 
-def vektorfeld(F,G):
+def vektorfeld(F,G):                                 #solve lap(F)= div v wie in aufgabe beschrieben
     n, m = np.shape(F)[0], np.shape(F)[1]
     dim = n * m
     FL = F.flatten(order=("F"))
@@ -85,7 +86,7 @@ def vektorfeld(F,G):
     ZW = A.dot(FL)
     b=div(vbauen(F,G),n,m)
     b=b.toarray().flatten(order="F")
-    for i in range(n):  # "Xe" aus dem Omega(F) holen um auf andere Seite zu kriegen
+    for i in range(n):                              # "Bekannten" auf die rechte seite bringen
         b[i] = ZW[i]
     for i in range((n * m) - n, dim):
         b[i] = ZW[i]
@@ -98,7 +99,7 @@ def vektorfeld(F,G):
     return lapF
 
 
-def vbauen(F,G):
+def vbauen(F,G):                                       #build vektorfeld nach aufgabenstellung
     n,m=  np.shape(F)[0], np.shape(F)[1]
     FG=  gradient(F)
     GG= gradient(G)
@@ -111,35 +112,36 @@ def vbauen(F,G):
 
 
 
-def omega(F,G,i,j):                                                                  #Teilmenge wo eingefügt werden soll
+def omega(F,G,i,j):                                                  #Ausschnitt des Bildes wo eingefügt werden soll ausgeben
     p, q = np.shape(G)[0], np.shape(G)[1]
     return F[i:i+p,j:j+q]
 
-def combine(F,G,i,j,Art="Gradient"):
+def combine(F,G,i,j,Art="Gradient"):                            #Insert G into F at Location i,j (nxmx1 dimensionale Matrizen)
     p, q = np.shape(G)[0], np.shape(G)[1]
     OM=omega(F,G,i,j)
 
-    if Art=="nix":
-        for l in range(i,i+p):
-            for ll in range(j,j+q):
-                F[l][ll]=G[l-i][ll-j]
+    if Art=="Nichts":
+        F[i+1:i+p-1,j+1:j+q-1] = G[1:np.shape(OM)[0]-1,1:np.shape(OM)[1]-1]
         return F
-    
+
+
+        
     if Art == "Gradient":
         FS=diffgl(OM,G)
     else:
         FS=vektorfeld(OM,G)
 
 
-    E=FS[0]
-    Z= E.reshape((np.shape(OM)[0],np.shape(OM)[1]),order="F")
+    E=FS[0]                                                                        #
 
-    F[i+1:i+p-1,j+1:j+q-1] = Z[1:np.shape(OM)[0]-1,1:np.shape(OM)[1]-1]
-    return F
+    Z= E.reshape((np.shape(OM)[0],np.shape(OM)[1]),order="F")                      #zurück in matrix form
+
+    F[i+1:i+p-1,j+1:j+q-1] = Z[1:np.shape(OM)[0]-1,1:np.shape(OM)[1]-1]          #Ergebnisse einsetzen
+    return np.clip(F,0,255)                                                                    #Matrix hat auch Werte > 255, daher runterclippen auf 0-255
 
 
 
-def alltogether(Großes,Kleines,i,j,Art="Gradient"):
+def alltogether(Großes,Kleines,i,j,Art="Gradient",Title=""):                  #Bilder in R,G,B Matrizen aufteilen, einzelne Komponenten kombinieren und wieder zusammen stecken
     G = io.imread(Großes)
     G=G.astype("int64")
     RG, GG, BG = G[:, :, 0], G[:, :, 1], G[:, :, 2]
@@ -153,81 +155,15 @@ def alltogether(Großes,Kleines,i,j,Art="Gradient"):
     FR = combine(RG, RK, i, j,Art)                                            #Combine results
 
     RGB = np.dstack((FR,FG,FB))
-
-    return RGB
-
-
-
-water=io.imread("water.jpg")
-bear=io.imread("bear.jpg")
-bird=io.imread("bird.jpg")
-plane=io.imread("plane.jpg")
+    plt.imshow(RGB)                                                          #show results
+    plt.title(Title)
+    plt.show()
 
 
-WaBe2=alltogether("water.jpg","bear.jpg",100,20)
-plt.imshow(WaBe2)
-plt.title("Bear in Water, Seamless")
-plt.show()
-
-WaBe3=alltogether("water.jpg","bear.jpg",100,20,5)
-plt.imshow(WaBe3)
-plt.title("Bear in Water, gem. Grad.")
-plt.show()
-
-WaBe=combine(water,bear,100,20,"nix")
-plt.imshow(WaBe)
-plt.title("Bear in Water, keine Bearbeitung")
-plt.show()
-
-
-BiPl2=alltogether("bird.jpg","plane.jpg",50,440)
-plt.imshow(BiPl2)
-plt.title("Plane by Bird, Seamless")
-plt.show()
-
-BiPl3=alltogether("bird.jpg","plane.jpg",50,440,5)
-plt.imshow(BiPl3)
-plt.title("Plane by Bird, gem. Grad.")
-plt.show()
-
-BiPl=combine(bird,plane,50,440,"nix")
-plt.imshow(BiPl)
-plt.title("Plane by Bird, keine Bearbeitung")
-plt.show()
-
-"""laplace=np.zeros(5,7)
-for i in range(5):
-    for ii in range(7):
-        laplace[i][ii]"""
-
-
-
-
-
-"""
 if __name__ == "__main__":
-    K=io.imread(filename)
-    BK,GK,RK = K[:, :, 0], K[:, :, 1], K[:, :, 2]
-    L=io.imread(filename)
-    BL,GL,RL = L[:, :, 0], L[:, :, 1],L[:, :, 2]
-    X=io.imread("bear.jpg")
-    L =io.imread("bear.jpg")
-    BL,GL,RL = L[:, :, 0], L[:, :, 1],L[:, :, 2]
-    K=io.imread("water.jpg")
-    BK,GK,RK = K[:, :, 0], K[:, :, 1], K[:, :, 2]
-    combine(BK,BL,187,165)
-       K = io.imread(Großes)
-    BK, GK, RK = K[:, :, 0], K[:, :, 1], K[:, :, 2]
-    L = io.imread(Kleines)
-    BL, GL, RL = L[:, :, 0], L[:, :, 1], L[:, :, 2]
-    def channelSplit(image):
-    return np.dsplit(image,image.shape[-1])
-    A = veclap(n, m).tocsc()
-    for i in range(n):                                    #"Xe" aus dem Omega(F) holen um auf andere Seite zu kriegen
-        z=z+A.getcol(i)*FL[i]
-    for i in range((n*m)-n,n*m):
-        z=z+A.getcol(i)*  FL[i]
-    for i in range(n,(n*m)-n,(n-1)):
-        z =z+A.getcol(i) * FL[i]
-    
-"""
+    alltogether("water.jpg","bear.jpg",100,30,Title="Laplace")
+    alltogether("water.jpg", "bear.jpg", 100,30, Art="B",Title="Divergenz")
+    alltogether("water.jpg","bear.jpg",100,30,"Nichts","Keine Bearbeitung")
+    alltogether("bird.jpg","plane.jpg",50,400,Title="Laplace")
+    alltogether("bird.jpg", "plane.jpg",50, 400, Art="B", Title="Divergenz")
+    alltogether("bird.jpg","plane.jpg",50,400,"Nichts","Keine Bearbeitung")
