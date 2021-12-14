@@ -208,6 +208,7 @@ def show4(labs,imgs):
 
     plt.scatter(Mittelpunkte[0, 0], Mittelpunkte[0, 1], color="yellow")
     plt.scatter(Mittelpunkte[1, 0], Mittelpunkte[1, 1], color="blue")
+    plt.title("K-Means Clustering Vergleich 0(rot)/1(grün)")
     plt.show()
 
     EI = np.zeros([100, 2], dtype=float)
@@ -220,40 +221,45 @@ def show4(labs,imgs):
 
     M1 = Mittelpunkte[0, :]
     M2 = Mittelpunkte[1, :]
-    richtig = 0
-    falsch = 0
+    richtig0 = 0
+    falsch0 = 0
     for i in range(100):
         if norm(M1 - EI[i]) <= norm(M2 - EI[i]):
-            richtig += 1
+            richtig0 += 1
         else:
-            falsch += 1
-    print("Klassifizierungen der 0:", "richtig ", richtig, " falsch ", falsch)
-    richtig = 0
-    falsch = 0
+            falsch0 += 1
+
+    richtig1 = 0
+    falsch1 = 0
     for i in range(100):
         if norm(M2 - NE[i]) ** 2 <= norm(M1 - NE[i]) ** 2:
-            richtig += 1
+            richtig1 += 1
         else:
-            falsch += 1
-    print("Klassifizierungen der 1:", "richtig ", richtig, " falsch ", falsch)
+            falsch1 += 1
+    fig, ax = plt.subplots()
+    table_data = [
+        ["Richtige Klassifizierungen der 0", richtig0],
+        ["Falsche Klassifizierungen der 0", falsch0],
+        ["Richtige Klassifizierungen der 1", richtig1],
+        ["Falsche Klassifizierungen der 1", falsch1]
 
+    ]
+    table = ax.table(cellText=table_data, loc='center')
+    table.set_fontsize(14)
+    table.scale(1, 4)
+    ax.axis('off')
+    plt.title("Testklassifizierungen 0 und 1")
+    plt.show()
 
 if __name__ == "__main__":
-    candidates = ["macosx", "qt5agg", "gtk3agg", "tkagg", "wxagg"]
-    for candidate in candidates:
-        try:
-            plt.switch_backend(candidate)
-            print('Using backend: ' + candidate)
-            break
-        except (ImportError, ModuleNotFoundError):
-            pass
+    
     imgs = np.fromfile("train-images-idx3-ubyte", dtype=np.uint8)
     imgs = np.reshape(imgs[16:], [-1, 28, 28])
     labs = np.fromfile("train-labels-idx1-ubyte", dtype=np.uint8)
     labs = labs[8:]
-
+    """
     show2(labs,imgs)
         
     show3(labs, imgs)
-
+    """
     show4(labs, imgs)
